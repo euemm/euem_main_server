@@ -40,3 +40,6 @@ application-prod.yml
 *.war
 *.zip
 *.tar.gz
+
+# PM2
+ecosystem.config.js
