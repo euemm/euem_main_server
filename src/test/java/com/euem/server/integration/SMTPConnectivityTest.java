@@ -51,18 +51,23 @@ class SMTPConnectivityTest {
 		assertNotNull(smtpHost, "SMTP host should be configured");
 		assertTrue(smtpPort > 0, "SMTP port should be configured");
 
+		assertTrue(mailSender instanceof JavaMailSenderImpl, 
+				"JavaMailSender should be an instance of JavaMailSenderImpl");
+		
+		JavaMailSenderImpl mailSenderImpl = (JavaMailSenderImpl) mailSender;
+		String configuredHost = mailSenderImpl.getHost();
+		int configuredPort = mailSenderImpl.getPort();
+
+		assertNotNull(configuredHost, "SMTP host should be configured in JavaMailSender");
+		assertTrue(configuredPort > 0, "SMTP port should be configured in JavaMailSender");
+
 		Session session = getSession();
 		assertNotNull(session, "Mail session should be available");
 
 		Properties props = session.getProperties();
-		String host = props.getProperty("mail.smtp.host");
-		String port = props.getProperty("mail.smtp.port");
 
-		assertNotNull(host, "SMTP host should be configured");
-		assertNotNull(port, "SMTP port should be configured");
-
-		System.out.println("SMTP Host: " + host);
-		System.out.println("SMTP Port: " + port);
+		System.out.println("JavaMailSender Host: " + configuredHost);
+		System.out.println("JavaMailSender Port: " + configuredPort);
 		System.out.println("SMTP Auth: " + props.getProperty("mail.smtp.auth"));
 		System.out.println("SMTP StartTLS: " + props.getProperty("mail.smtp.starttls.enable"));
 	}
@@ -78,28 +83,31 @@ class SMTPConnectivityTest {
 		assertNotNull(smtpHost, "SMTP host should be configured");
 		assertTrue(smtpPort > 0, "SMTP port should be configured");
 
-		Session session = getSession();
-		Properties props = session.getProperties();
-		String host = props.getProperty("mail.smtp.host");
-		String port = props.getProperty("mail.smtp.port");
+		assertTrue(mailSender instanceof JavaMailSenderImpl, 
+				"JavaMailSender should be an instance of JavaMailSenderImpl");
+		
+		JavaMailSenderImpl mailSenderImpl = (JavaMailSenderImpl) mailSender;
+		String host = mailSenderImpl.getHost();
+		int port = mailSenderImpl.getPort();
 
 		assertNotNull(host, "SMTP host should be configured");
-		assertNotNull(port, "SMTP port should be configured");
+		assertTrue(port > 0, "SMTP port should be configured");
+
+		Session session = getSession();
+		Properties props = session.getProperties();
 
 		try {
 			Transport transport = session.getTransport("smtp");
 			String username = smtpUsername != null && !smtpUsername.isEmpty() 
-					? smtpUsername : props.getProperty("mail.smtp.user");
+					? smtpUsername : mailSenderImpl.getUsername();
 			String password = smtpPassword != null && !smtpPassword.isEmpty() 
-					? smtpPassword : props.getProperty("mail.smtp.password");
-
-			int portNumber = Integer.parseInt(port);
+					? smtpPassword : mailSenderImpl.getPassword();
 			
 			if (username != null && !username.isEmpty() && 
 				password != null && !password.isEmpty()) {
-				transport.connect(host, portNumber, username, password);
+				transport.connect(host, port, username, password);
 			} else {
-				transport.connect(host, portNumber, null, null);
+				transport.connect(host, port, null, null);
 			}
 
 			assertTrue(transport.isConnected(), "SMTP transport should be connected");
