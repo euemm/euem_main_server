@@ -71,8 +71,8 @@ class PostgreSQLConnectivityTest {
 	}
 
 	@Test
-	void testPostgreSQLConnectionWithSSL() {
-		System.out.println("=== PostgreSQL SSL Connection Test ===");
+	void testPostgreSQLConnectionWithoutSSL() {
+		System.out.println("=== PostgreSQL Non-SSL Connection Test ===");
 		System.out.println("Datasource URL: " + datasourceUrl);
 		System.out.println("Datasource Username: " + datasourceUsername);
 		
@@ -82,30 +82,19 @@ class PostgreSQLConnectivityTest {
 			DatabaseMetaData metaData = connection.getMetaData();
 			
 			String url = metaData.getURL();
-			// Check if SSL mode is configured (prefer, require, verify-ca, etc.)
-			assertTrue(url.contains("sslmode="), 
-					"Connection URL should have SSL mode configured: " + url);
+			// Verify that connection URL does not require SSL (database doesn't support SSL)
+			assertFalse(url.contains("sslmode=require"), 
+					"Connection URL should not require SSL (database doesn't support it): " + url);
 
-			// Check if SSL is actually being used
-			boolean sslInUse = false;
-			try {
-				// Try to get SSL info from connection
-				Object sslFactory = connection.getClass().getMethod("getSSLFactory").invoke(connection);
-				sslInUse = sslFactory != null;
-			} catch (Exception e) {
-				// SSL info not available, connection might not be using SSL
-				sslInUse = false;
-			}
+			// Verify connection is working without SSL
+			assertNotNull(connection, "Connection should not be null");
+			assertFalse(connection.isClosed(), "Connection should be open");
 
 			System.out.println("Connection URL: " + url);
-			if (sslInUse) {
-				System.out.println("SSL: Enabled and in use");
-			} else {
-				System.out.println("SSL: Not in use (server may not support SSL)");
-			}
+			System.out.println("SSL: Not required (database doesn't support SSL)");
 
 		} catch (SQLException e) {
-			System.err.println("=== PostgreSQL SSL Connection Error ===");
+			System.err.println("=== PostgreSQL Connection Error ===");
 			System.err.println("Error Message: " + e.getMessage());
 			System.err.println("Error Code: " + e.getErrorCode());
 			System.err.println("SQL State: " + e.getSQLState());
@@ -113,7 +102,7 @@ class PostgreSQLConnectivityTest {
 				System.err.println("Cause: " + e.getCause().getMessage());
 			}
 			e.printStackTrace();
-			fail("Failed to verify connection to PostgreSQL: " + e.getMessage(), e);
+			fail("Failed to connect to PostgreSQL: " + e.getMessage(), e);
 		}
 	}
 }
