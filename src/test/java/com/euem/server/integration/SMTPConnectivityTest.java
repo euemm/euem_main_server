@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.context.ActiveProfiles;
 
 import jakarta.mail.Session;
@@ -26,13 +27,26 @@ class SMTPConnectivityTest {
 	@Value("${spring.mail.port}")
 	private int smtpPort;
 
+	@Value("${spring.mail.username:}")
+	private String smtpUsername;
+
+	@Value("${spring.mail.password:}")
+	private String smtpPassword;
+
+	private Session getSession() {
+		if (mailSender instanceof JavaMailSenderImpl) {
+			return ((JavaMailSenderImpl) mailSender).getSession();
+		}
+		throw new IllegalStateException("JavaMailSender is not an instance of JavaMailSenderImpl");
+	}
+
 	@Test
 	void testSMTPConfiguration() {
 		assertNotNull(mailSender, "JavaMailSender should be configured");
 		assertNotNull(smtpHost, "SMTP host should be configured");
 		assertTrue(smtpPort > 0, "SMTP port should be configured");
 
-		Session session = mailSender.getSession();
+		Session session = getSession();
 		assertNotNull(session, "Mail session should be available");
 
 		Properties props = session.getProperties();
@@ -54,7 +68,7 @@ class SMTPConnectivityTest {
 		assertNotNull(smtpHost, "SMTP host should be configured");
 		assertTrue(smtpPort > 0, "SMTP port should be configured");
 
-		Session session = mailSender.getSession();
+		Session session = getSession();
 		Properties props = session.getProperties();
 		String host = props.getProperty("mail.smtp.host");
 		String port = props.getProperty("mail.smtp.port");
@@ -64,8 +78,10 @@ class SMTPConnectivityTest {
 
 		try {
 			Transport transport = session.getTransport("smtp");
-			String username = props.getProperty("mail.smtp.user");
-			String password = props.getProperty("mail.smtp.password");
+			String username = smtpUsername != null && !smtpUsername.isEmpty() 
+					? smtpUsername : props.getProperty("mail.smtp.user");
+			String password = smtpPassword != null && !smtpPassword.isEmpty() 
+					? smtpPassword : props.getProperty("mail.smtp.password");
 
 			int portNumber = Integer.parseInt(port);
 			
@@ -90,7 +106,7 @@ class SMTPConnectivityTest {
 	void testSMTPStartTLSConfiguration() {
 		assertNotNull(mailSender, "JavaMailSender should be configured");
 
-		Session session = mailSender.getSession();
+		Session session = getSession();
 		Properties props = session.getProperties();
 		String startTLS = props.getProperty("mail.smtp.starttls.enable");
 
