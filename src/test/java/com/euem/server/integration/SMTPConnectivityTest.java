@@ -42,6 +42,11 @@ class SMTPConnectivityTest {
 
 	@Test
 	void testSMTPConfiguration() {
+		System.out.println("=== SMTP Configuration Test ===");
+		System.out.println("SMTP Host: " + smtpHost);
+		System.out.println("SMTP Port: " + smtpPort);
+		System.out.println("SMTP Username: " + (smtpUsername != null && !smtpUsername.isEmpty() ? smtpUsername : "(empty)"));
+		
 		assertNotNull(mailSender, "JavaMailSender should be configured");
 		assertNotNull(smtpHost, "SMTP host should be configured");
 		assertTrue(smtpPort > 0, "SMTP port should be configured");
@@ -64,6 +69,11 @@ class SMTPConnectivityTest {
 
 	@Test
 	void testSMTPConnection() {
+		System.out.println("=== SMTP Connection Test ===");
+		System.out.println("SMTP Host: " + smtpHost);
+		System.out.println("SMTP Port: " + smtpPort);
+		System.out.println("SMTP Username: " + (smtpUsername != null && !smtpUsername.isEmpty() ? smtpUsername : "(empty)"));
+		
 		assertNotNull(mailSender, "JavaMailSender should be configured");
 		assertNotNull(smtpHost, "SMTP host should be configured");
 		assertTrue(smtpPort > 0, "SMTP port should be configured");
@@ -97,6 +107,14 @@ class SMTPConnectivityTest {
 
 			transport.close();
 		} catch (Exception e) {
+			System.err.println("=== SMTP Connection Error ===");
+			System.err.println("Host: " + host);
+			System.err.println("Port: " + port);
+			System.err.println("Error Message: " + e.getMessage());
+			if (e.getCause() != null) {
+				System.err.println("Cause: " + e.getCause().getMessage());
+			}
+			e.printStackTrace();
 			fail("Failed to connect to SMTP server at " + host + ":" + port + 
 					": " + e.getMessage(), e);
 		}
@@ -104,6 +122,10 @@ class SMTPConnectivityTest {
 
 	@Test
 	void testSMTPStartTLSConfiguration() {
+		System.out.println("=== SMTP StartTLS Configuration Test ===");
+		System.out.println("SMTP Host: " + smtpHost);
+		System.out.println("SMTP Port: " + smtpPort);
+		
 		assertNotNull(mailSender, "JavaMailSender should be configured");
 
 		Session session = getSession();

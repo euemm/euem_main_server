@@ -2,6 +2,7 @@ package com.euem.server.integration;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -22,8 +23,19 @@ class PostgreSQLConnectivityTest {
 	@Autowired
 	private DataSource dataSource;
 
+	@Value("${spring.datasource.url}")
+	private String datasourceUrl;
+
+	@Value("${spring.datasource.username}")
+	private String datasourceUsername;
+
 	@Test
 	void testPostgreSQLConnection() {
+		System.out.println("=== PostgreSQL Connection Test ===");
+		System.out.println("Datasource URL: " + datasourceUrl);
+		System.out.println("Datasource Username: " + datasourceUsername);
+		System.out.println("Datasource configured: " + (dataSource != null));
+		
 		assertNotNull(dataSource, "DataSource should be configured");
 
 		try (Connection connection = dataSource.getConnection()) {
@@ -46,12 +58,24 @@ class PostgreSQLConnectivityTest {
 			System.out.println("Connected to database: " + catalogName);
 
 		} catch (SQLException e) {
+			System.err.println("=== PostgreSQL Connection Error ===");
+			System.err.println("Error Message: " + e.getMessage());
+			System.err.println("Error Code: " + e.getErrorCode());
+			System.err.println("SQL State: " + e.getSQLState());
+			if (e.getCause() != null) {
+				System.err.println("Cause: " + e.getCause().getMessage());
+			}
+			e.printStackTrace();
 			fail("Failed to connect to PostgreSQL: " + e.getMessage(), e);
 		}
 	}
 
 	@Test
 	void testPostgreSQLConnectionWithSSL() {
+		System.out.println("=== PostgreSQL SSL Connection Test ===");
+		System.out.println("Datasource URL: " + datasourceUrl);
+		System.out.println("Datasource Username: " + datasourceUsername);
+		
 		assertNotNull(dataSource, "DataSource should be configured");
 
 		try (Connection connection = dataSource.getConnection()) {
@@ -81,6 +105,14 @@ class PostgreSQLConnectivityTest {
 			}
 
 		} catch (SQLException e) {
+			System.err.println("=== PostgreSQL SSL Connection Error ===");
+			System.err.println("Error Message: " + e.getMessage());
+			System.err.println("Error Code: " + e.getErrorCode());
+			System.err.println("SQL State: " + e.getSQLState());
+			if (e.getCause() != null) {
+				System.err.println("Cause: " + e.getCause().getMessage());
+			}
+			e.printStackTrace();
 			fail("Failed to verify connection to PostgreSQL: " + e.getMessage(), e);
 		}
 	}
