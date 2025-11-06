@@ -94,7 +94,6 @@ class SMTPConnectivityTest {
 		assertTrue(port > 0, "SMTP port should be configured");
 
 		Session session = getSession();
-		Properties props = session.getProperties();
 
 		try {
 			Transport transport = session.getTransport("smtp");
