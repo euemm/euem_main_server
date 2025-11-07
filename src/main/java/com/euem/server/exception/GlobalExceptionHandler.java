@@ -1,5 +1,7 @@
 package com.euem.server.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,9 +16,12 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	
+	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+		log.warn("UserAlreadyExistsException: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.CONFLICT.value(),
             ex.getMessage(),
@@ -27,6 +32,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+		log.warn("UserNotFoundException: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.NOT_FOUND.value(),
             ex.getMessage(),
@@ -37,6 +43,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(InvalidOtpException.class)
     public ResponseEntity<ErrorResponse> handleInvalidOtp(InvalidOtpException ex) {
+		log.warn("InvalidOtpException: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
             ex.getMessage(),
@@ -47,6 +54,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(OtpExpiredException.class)
     public ResponseEntity<ErrorResponse> handleOtpExpired(OtpExpiredException ex) {
+		log.warn("OtpExpiredException: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
             ex.getMessage(),
@@ -57,6 +65,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(InvalidPasswordException.class)
     public ResponseEntity<ErrorResponse> handleInvalidPassword(InvalidPasswordException ex) {
+		log.warn("InvalidPasswordException: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.BAD_REQUEST.value(),
             ex.getMessage(),
@@ -67,6 +76,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+		log.warn("BadCredentialsException: {}", ex.getMessage());
         ErrorResponse error = new ErrorResponse(
             HttpStatus.UNAUTHORIZED.value(),
             "Invalid email or password",
@@ -77,6 +87,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
+		log.warn("Validation error: {}", ex.getMessage());
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -95,6 +106,7 @@ public class GlobalExceptionHandler {
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+		log.error("Unhandled exception", ex);
         ErrorResponse error = new ErrorResponse(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "An unexpected error occurred",
