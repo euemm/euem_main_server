@@ -4,6 +4,8 @@ import com.euem.server.entity.User;
 import com.euem.server.entity.VerificationToken;
 import com.euem.server.repository.UserRepository;
 import com.euem.server.repository.VerificationTokenRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.ClassOrderer;
 import org.junit.jupiter.api.TestClassOrder;
@@ -13,9 +15,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Optional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -41,6 +45,8 @@ class AuthApiIntegrationTest {
 	private static final String TEST_PASSWORD = "TestPassword123!";
 	private static final String TEST_FIRST_NAME = "API";
 	private static final String TEST_LAST_NAME = "Test";
+	private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static String authToken;
 	
 	@BeforeAll
 	void beforeAll() {
@@ -197,7 +203,7 @@ class AuthApiIntegrationTest {
 			}
 			""", TEST_EMAIL, TEST_PASSWORD);
 		
-		mockMvc.perform(post("/auth/login")
+		MvcResult result = mockMvc.perform(post("/auth/login")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(status().isOk())
@@ -205,7 +211,11 @@ class AuthApiIntegrationTest {
 				.andExpect(jsonPath("$.tokenType").value("Bearer"))
 				.andExpect(jsonPath("$.expiresIn").exists())
 				.andExpect(jsonPath("$.user").exists())
-				.andExpect(jsonPath("$.user.email").value(TEST_EMAIL));
+				.andExpect(jsonPath("$.user.email").value(TEST_EMAIL))
+				.andReturn();
+		
+		JsonNode responseJson = objectMapper.readTree(result.getResponse().getContentAsString());
+		authToken = responseJson.get("accessToken").asText();
 		
 		System.out.println("✓ Login successful");
 		System.out.println("✓ JWT token generated");
@@ -213,6 +223,48 @@ class AuthApiIntegrationTest {
 	
 	@Test
 	@Order(6)
+	@DisplayName("Test delete account and allow re-registration")
+	void testDeleteAccountAndReregister() throws Exception {
+		Assertions.assertNotNull(authToken, "Auth token should be available from login");
+		
+		mockMvc.perform(delete("/users/account")
+				.header("Authorization", "Bearer " + authToken))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.message").value("Account deleted successfully"))
+				.andExpect(jsonPath("$.success").value(true));
+		
+		User disabledUser = userRepository.findByEmail(TEST_EMAIL)
+			.orElseThrow(() -> new RuntimeException("User should exist after deletion"));
+		Assertions.assertFalse(disabledUser.getIsEnabled(), "User should be disabled after account deletion");
+		Assertions.assertTrue(disabledUser.getIsVerified(), "Deleted account should retain verification status");
+		
+		String registerRequest = String.format("""
+			{
+				"email": "%s",
+				"password": "%s",
+				"firstName": "%s",
+				"lastName": "%s"
+			}
+			""", TEST_EMAIL, TEST_PASSWORD, TEST_FIRST_NAME, TEST_LAST_NAME);
+		
+		mockMvc.perform(post("/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(registerRequest))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.email").value(TEST_EMAIL))
+				.andExpect(jsonPath("$.isVerified").value(false))
+				.andExpect(jsonPath("$.isEnabled").value(true));
+		
+		User reactivatedUser = userRepository.findByEmail(TEST_EMAIL)
+			.orElseThrow(() -> new RuntimeException("User should exist after re-registration"));
+		Assertions.assertTrue(reactivatedUser.getIsEnabled(), "User should be enabled after re-registration");
+		Assertions.assertFalse(reactivatedUser.getIsVerified(), "User should require verification after re-registration");
+		
+		System.out.println("✓ Account deletion followed by re-registration succeeded");
+	}
+	
+	@Test
+	@Order(7)
 	@DisplayName("Test login with invalid credentials")
 	void testLoginInvalidCredentials() throws Exception {
 		String requestBody = String.format("""

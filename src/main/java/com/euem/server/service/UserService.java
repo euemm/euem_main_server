@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -48,28 +49,37 @@ public class UserService {
     
     public UserResponse register(RegisterRequest request) {
 		log.info("Attempting to register user with email: {}", request.getEmail());
-		if (userRepository.existsByEmail(request.getEmail())) {
-			log.warn("Registration blocked because email already exists: {}", request.getEmail());
-			throw new UserAlreadyExistsException("User already exists with email: " + request.getEmail());
+		
+		Optional<User> existingOpt = userRepository.findByEmail(request.getEmail());
+		User targetUser;
+		if (existingOpt.isPresent()) {
+			User existingUser = existingOpt.get();
+			if (Boolean.TRUE.equals(existingUser.getIsEnabled())) {
+				log.warn("Registration blocked because email already exists and is active: {}", request.getEmail());
+				throw new UserAlreadyExistsException("User already exists with email: " + request.getEmail());
+			}
+			
+			log.info("Reactivating disabled account for email: {}", request.getEmail());
+			existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+			existingUser.setFirstName(request.getFirstName());
+			existingUser.setLastName(request.getLastName());
+			existingUser.setIsVerified(false);
+			existingUser.setIsEnabled(true);
+			ensureUserRole(existingUser, request.getEmail());
+			targetUser = existingUser;
+		} else {
+			User newUser = new User();
+			newUser.setEmail(request.getEmail());
+			newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+			newUser.setFirstName(request.getFirstName());
+			newUser.setLastName(request.getLastName());
+			newUser.setIsVerified(false);
+			newUser.setIsEnabled(true);
+			ensureUserRole(newUser, request.getEmail());
+			targetUser = newUser;
 		}
 		
-		User user = new User();
-		user.setEmail(request.getEmail());
-		user.setPassword(passwordEncoder.encode(request.getPassword()));
-		user.setFirstName(request.getFirstName());
-		user.setLastName(request.getLastName());
-		user.setIsVerified(false);
-		user.setIsEnabled(true);
-		
-		// Assign USER role
-		Role userRole = roleRepository.findByName(Role.RoleName.USER)
-			.orElseThrow(() -> {
-				log.error("USER role missing while registering email: {}", request.getEmail());
-				return new RuntimeException("USER role not found");
-			});
-		user.getRoles().add(userRole);
-		
-		User savedUser = userRepository.save(user);
+		User savedUser = userRepository.save(targetUser);
 		
 		log.info("User persisted with id: {}. Sending verification email.", savedUser.getId());
 		// Send verification email
@@ -258,4 +268,16 @@ public class UserService {
         
         return response;
     }
+	
+	private void ensureUserRole(User user, String emailForLog) {
+		Role userRole = roleRepository.findByName(Role.RoleName.USER)
+			.orElseThrow(() -> {
+				log.error("USER role missing while processing email: {}", emailForLog);
+				return new RuntimeException("USER role not found");
+			});
+		if (user.getRoles() == null) {
+			user.setRoles(new HashSet<>());
+		}
+		user.getRoles().add(userRole);
+	}
 }
