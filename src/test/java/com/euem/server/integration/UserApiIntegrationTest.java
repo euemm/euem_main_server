@@ -38,7 +38,7 @@ class UserApiIntegrationTest {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 	
-	private static final String TEST_EMAIL = "user-api-test@euem.net";
+	private static final String TEST_EMAIL = "no-reply@euem.net";
 	private static final String TEST_PASSWORD = "TestPassword123!";
 	private static User testUser;
 	private static String authToken;

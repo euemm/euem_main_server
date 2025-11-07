@@ -38,7 +38,7 @@ class AuthApiIntegrationTest {
 	@Autowired
 	private VerificationTokenRepository verificationTokenRepository;
 	
-	private static final String TEST_EMAIL = "api-test@euem.net";
+	private static final String TEST_EMAIL = "no-reply@euem.net";
 	private static final String TEST_PASSWORD = "TestPassword123!";
 	private static final String TEST_FIRST_NAME = "API";
 	private static final String TEST_LAST_NAME = "Test";
