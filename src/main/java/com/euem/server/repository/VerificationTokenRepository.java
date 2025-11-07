@@ -26,9 +26,9 @@ public interface VerificationTokenRepository extends JpaRepository<VerificationT
         LocalDateTime now
     );
     
-    @Modifying
-    @Query(value = "DELETE FROM verification_tokens WHERE user_id = :userId AND type::text = :type", nativeQuery = true)
-    void deleteByUserAndType(@Param("userId") UUID userId, @Param("type") String type);
+	@Modifying
+	@Query(value = "DELETE FROM verification_tokens WHERE user_id = :userId AND CAST(type AS TEXT) = :type", nativeQuery = true)
+	void deleteByUserAndType(@Param("userId") UUID userId, @Param("type") String type);
     
     @Modifying
     @Query("DELETE FROM VerificationToken vt WHERE vt.expiryTime < :now")
