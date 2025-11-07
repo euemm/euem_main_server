@@ -1,6 +1,5 @@
 package com.euem.server.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -41,7 +40,7 @@ public class TestSecurityConfig {
     
     @Bean
     @Primary
-    public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain testSecurityFilterChain(HttpSecurity http, UserRepository userRepository) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
@@ -55,15 +54,12 @@ public class TestSecurityConfig {
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
                     .decoder(jwtDecoder())
-                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter(userRepository))
                 )
             );
         
         return http.build();
     }
-    
-    @Autowired
-    private UserRepository userRepository;
     
     @Bean
     @Primary
@@ -75,7 +71,7 @@ public class TestSecurityConfig {
     
     @Bean
     @Primary
-    public Converter<Jwt, UsernamePasswordAuthenticationToken> jwtAuthenticationConverter() {
+    public Converter<Jwt, UsernamePasswordAuthenticationToken> jwtAuthenticationConverter(UserRepository userRepository) {
         return jwt -> {
             String email = jwt.getClaimAsString("sub");
             if (email == null) {

@@ -7,7 +7,6 @@ import com.euem.server.entity.User;
 import com.euem.server.repository.RoleRepository;
 import com.euem.server.repository.UserRepository;
 import com.euem.server.repository.VerificationTokenRepository;
-import com.euem.server.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
