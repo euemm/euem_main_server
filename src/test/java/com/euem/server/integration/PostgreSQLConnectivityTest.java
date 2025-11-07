@@ -1,6 +1,9 @@
 package com.euem.server.integration;
 
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 	"spring.datasource.hikari.initialization-fail-timeout=-1"
 })
 @ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PostgreSQLConnectivityTest {
 
 	@Autowired
@@ -30,6 +34,7 @@ class PostgreSQLConnectivityTest {
 	private String datasourceUsername;
 
 	@Test
+	@Order(1)
 	void testPostgreSQLConnection() {
 		System.out.println("=== PostgreSQL Connection Test ===");
 		System.out.println("Datasource URL: " + datasourceUrl);
@@ -71,6 +76,7 @@ class PostgreSQLConnectivityTest {
 	}
 
 	@Test
+	@Order(2)
 	void testPostgreSQLConnectionWithoutSSL() {
 		System.out.println("=== PostgreSQL Non-SSL Connection Test ===");
 		System.out.println("Datasource URL: " + datasourceUrl);

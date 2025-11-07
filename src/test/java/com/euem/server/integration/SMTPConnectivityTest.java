@@ -1,6 +1,9 @@
 package com.euem.server.integration;
 
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SMTPConnectivityTest {
 
 	@Autowired
@@ -41,6 +45,7 @@ class SMTPConnectivityTest {
 	}
 
 	@Test
+	@Order(1)
 	void testSMTPConfiguration() {
 		System.out.println("=== SMTP Configuration Test ===");
 		System.out.println("SMTP Host: " + smtpHost);
@@ -73,6 +78,7 @@ class SMTPConnectivityTest {
 	}
 
 	@Test
+	@Order(2)
 	void testSMTPConnection() {
 		System.out.println("=== SMTP Connection Test ===");
 		System.out.println("SMTP Host: " + smtpHost);
@@ -128,6 +134,7 @@ class SMTPConnectivityTest {
 	}
 
 	@Test
+	@Order(3)
 	void testSMTPStartTLSConfiguration() {
 		System.out.println("=== SMTP StartTLS Configuration Test ===");
 		System.out.println("SMTP Host: " + smtpHost);
