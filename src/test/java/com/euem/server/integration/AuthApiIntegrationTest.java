@@ -2,21 +2,19 @@ package com.euem.server.integration;
 
 import com.euem.server.entity.User;
 import com.euem.server.entity.VerificationToken;
-import com.euem.server.repository.RoleRepository;
 import com.euem.server.repository.UserRepository;
 import com.euem.server.repository.VerificationTokenRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.TestClassOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -26,6 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestClassOrder(ClassOrderer.OrderAnnotation.class)
+@Order(3)
 class AuthApiIntegrationTest {
 	
 	@Autowired
@@ -43,11 +44,14 @@ class AuthApiIntegrationTest {
 	private static final String TEST_LAST_NAME = "Test";
 	
 	@BeforeAll
-	static void beforeAll(@Autowired UserRepository userRepository, 
-	                      @Autowired VerificationTokenRepository tokenRepository) {
+	void beforeAll() {
+		System.out.println("\n" + "=".repeat(80));
+		System.out.println("AUTHENTICATION API INTEGRATION TESTS");
+		System.out.println("=".repeat(80));
+		
 		// Clean up any existing test data
 		userRepository.findByEmail(TEST_EMAIL).ifPresent(user -> {
-			tokenRepository.deleteAll(tokenRepository.findAll().stream()
+			verificationTokenRepository.deleteAll(verificationTokenRepository.findAll().stream()
 				.filter(token -> token.getUser().getId().equals(user.getId()))
 				.toList());
 			userRepository.delete(user);
@@ -55,15 +59,18 @@ class AuthApiIntegrationTest {
 	}
 	
 	@AfterAll
-	static void afterAll(@Autowired UserRepository userRepository,
-	                     @Autowired VerificationTokenRepository tokenRepository) {
+	void afterAll() {
 		// Clean up test data after all tests
 		userRepository.findByEmail(TEST_EMAIL).ifPresent(user -> {
-			tokenRepository.deleteAll(tokenRepository.findAll().stream()
+			verificationTokenRepository.deleteAll(verificationTokenRepository.findAll().stream()
 				.filter(token -> token.getUser().getId().equals(user.getId()))
 				.toList());
 			userRepository.delete(user);
 		});
+		
+		System.out.println("=".repeat(80));
+		System.out.println("✓ Authentication API tests completed");
+		System.out.println("=".repeat(80) + "\n");
 	}
 	
 	@Test

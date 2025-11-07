@@ -1,9 +1,8 @@
 package com.euem.server.integration;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.TestClassOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.*;
 })
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestClassOrder(ClassOrderer.OrderAnnotation.class)
+@Order(1)
 class PostgreSQLConnectivityTest {
 
 	@Autowired
@@ -33,10 +34,18 @@ class PostgreSQLConnectivityTest {
 	@Value("${spring.datasource.username}")
 	private String datasourceUsername;
 
+	@BeforeAll
+	static void setup() {
+		System.out.println("\n" + "=".repeat(80));
+		System.out.println("POSTGRESQL CONNECTIVITY TESTS");
+		System.out.println("=".repeat(80));
+	}
+	
 	@Test
 	@Order(1)
+	@DisplayName("Test PostgreSQL connection")
 	void testPostgreSQLConnection() {
-		System.out.println("=== PostgreSQL Connection Test ===");
+		System.out.println(">>> PostgreSQL Connection Test");
 		System.out.println("Datasource URL: " + datasourceUrl);
 		System.out.println("Datasource Username: " + datasourceUsername);
 		System.out.println("Datasource configured: " + (dataSource != null));
@@ -77,8 +86,9 @@ class PostgreSQLConnectivityTest {
 
 	@Test
 	@Order(2)
+	@DisplayName("Test PostgreSQL connection without SSL")
 	void testPostgreSQLConnectionWithoutSSL() {
-		System.out.println("=== PostgreSQL Non-SSL Connection Test ===");
+		System.out.println(">>> PostgreSQL Non-SSL Connection Test");
 		System.out.println("Datasource URL: " + datasourceUrl);
 		System.out.println("Datasource Username: " + datasourceUsername);
 		
@@ -110,6 +120,13 @@ class PostgreSQLConnectivityTest {
 			e.printStackTrace();
 			fail("Failed to connect to PostgreSQL: " + e.getMessage(), e);
 		}
+	}
+	
+	@AfterAll
+	static void summary() {
+		System.out.println("=".repeat(80));
+		System.out.println("✓ PostgreSQL connectivity verified");
+		System.out.println("=".repeat(80) + "\n");
 	}
 }
 

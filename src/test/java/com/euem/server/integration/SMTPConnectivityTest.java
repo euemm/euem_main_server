@@ -1,9 +1,8 @@
 package com.euem.server.integration;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.TestClassOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestClassOrder(ClassOrderer.OrderAnnotation.class)
+@Order(2)
 class SMTPConnectivityTest {
 
 	@Autowired
@@ -44,10 +45,18 @@ class SMTPConnectivityTest {
 		throw new IllegalStateException("JavaMailSender is not an instance of JavaMailSenderImpl");
 	}
 
+	@BeforeAll
+	static void setup() {
+		System.out.println("\n" + "=".repeat(80));
+		System.out.println("SMTP CONNECTIVITY TESTS");
+		System.out.println("=".repeat(80));
+	}
+	
 	@Test
 	@Order(1)
+	@DisplayName("Test SMTP configuration")
 	void testSMTPConfiguration() {
-		System.out.println("=== SMTP Configuration Test ===");
+		System.out.println(">>> SMTP Configuration Test");
 		System.out.println("SMTP Host: " + smtpHost);
 		System.out.println("SMTP Port: " + smtpPort);
 		System.out.println("SMTP Username: " + (smtpUsername != null && !smtpUsername.isEmpty() ? smtpUsername : "(empty)"));
@@ -79,8 +88,9 @@ class SMTPConnectivityTest {
 
 	@Test
 	@Order(2)
+	@DisplayName("Test SMTP connection")
 	void testSMTPConnection() {
-		System.out.println("=== SMTP Connection Test ===");
+		System.out.println(">>> SMTP Connection Test");
 		System.out.println("SMTP Host: " + smtpHost);
 		System.out.println("SMTP Port: " + smtpPort);
 		System.out.println("SMTP Username: " + (smtpUsername != null && !smtpUsername.isEmpty() ? smtpUsername : "(empty)"));
@@ -135,8 +145,9 @@ class SMTPConnectivityTest {
 
 	@Test
 	@Order(3)
+	@DisplayName("Test SMTP StartTLS configuration")
 	void testSMTPStartTLSConfiguration() {
-		System.out.println("=== SMTP StartTLS Configuration Test ===");
+		System.out.println(">>> SMTP StartTLS Configuration Test");
 		System.out.println("SMTP Host: " + smtpHost);
 		System.out.println("SMTP Port: " + smtpPort);
 		
@@ -152,6 +163,13 @@ class SMTPConnectivityTest {
 		} else {
 			System.out.println("SMTP StartTLS is disabled");
 		}
+	}
+	
+	@AfterAll
+	static void summary() {
+		System.out.println("=".repeat(80));
+		System.out.println("✓ SMTP connectivity verified");
+		System.out.println("=".repeat(80) + "\n");
 	}
 }
 

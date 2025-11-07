@@ -4,8 +4,9 @@ import com.euem.server.entity.User;
 import com.euem.server.repository.UserRepository;
 import com.euem.server.security.CustomUserPrincipal;
 import com.euem.server.security.JwtTokenProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.ClassOrderer;
+import org.junit.jupiter.api.TestClassOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestClassOrder(ClassOrderer.OrderAnnotation.class)
+@Order(4)
 class UserApiIntegrationTest {
 	
 	@Autowired
@@ -40,11 +44,13 @@ class UserApiIntegrationTest {
 	private static String authToken;
 	
 	@BeforeAll
-	static void beforeAll(@Autowired UserRepository userRepository,
-	                      @Autowired com.euem.server.repository.RoleRepository roleRepository,
-	                      @Autowired PasswordEncoder passwordEncoder,
-	                      @Autowired JwtTokenProvider jwtTokenProvider,
-	                      @Autowired com.euem.server.repository.VerificationTokenRepository tokenRepository) {
+	void beforeAll(@Autowired com.euem.server.repository.RoleRepository roleRepository,
+	               @Autowired JwtTokenProvider jwtTokenProvider,
+	               @Autowired com.euem.server.repository.VerificationTokenRepository tokenRepository) {
+		System.out.println("\n" + "=".repeat(80));
+		System.out.println("USER API INTEGRATION TESTS");
+		System.out.println("=".repeat(80));
+		
 		// Clean up any existing test data
 		userRepository.findByEmail(TEST_EMAIL).ifPresent(user -> {
 			tokenRepository.deleteAll(tokenRepository.findAll().stream()
@@ -77,8 +83,7 @@ class UserApiIntegrationTest {
 	}
 	
 	@AfterAll
-	static void afterAll(@Autowired UserRepository userRepository,
-	                     @Autowired com.euem.server.repository.VerificationTokenRepository tokenRepository) {
+	void afterAll(@Autowired com.euem.server.repository.VerificationTokenRepository tokenRepository) {
 		// Clean up test data
 		userRepository.findByEmail(TEST_EMAIL).ifPresent(user -> {
 			tokenRepository.deleteAll(tokenRepository.findAll().stream()
@@ -87,7 +92,9 @@ class UserApiIntegrationTest {
 			userRepository.delete(user);
 		});
 		
-		System.out.println("✓ Test user cleaned up");
+		System.out.println("=".repeat(80));
+		System.out.println("✓ User API tests completed and cleaned up");
+		System.out.println("=".repeat(80) + "\n");
 	}
 	
 	@Test
