@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -173,6 +172,11 @@ class AuthApiIntegrationTest {
 	@Order(4)
 	@DisplayName("Test resend OTP")
 	void testResendOtp() throws Exception {
+		userRepository.findByEmail(TEST_EMAIL).ifPresent(user -> {
+			user.setIsVerified(false);
+			userRepository.save(user);
+		});
+		
 		mockMvc.perform(post("/auth/resend-otp")
 				.param("email", TEST_EMAIL))
 				.andExpect(status().isOk())
