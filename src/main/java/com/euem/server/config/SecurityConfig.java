@@ -35,6 +35,13 @@ public class SecurityConfig {
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(csrf -> csrf.disable())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.exceptionHandling(exceptions -> exceptions
+				.authenticationEntryPoint((request, response, authException) -> {
+					response.setStatus(401);
+					response.setContentType("application/json");
+					response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+				})
+			)
 			.authorizeHttpRequests(authz -> authz
 				.requestMatchers("/healthz").permitAll()
 				.requestMatchers("/auth/**").permitAll()
