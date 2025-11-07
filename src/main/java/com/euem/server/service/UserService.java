@@ -174,9 +174,9 @@ public class UserService {
         userRepository.save(user);
         
         // Delete all verification tokens for this user
-        verificationTokenRepository.deleteByUserAndType(userId, VerificationToken.TokenType.EMAIL_VERIFICATION);
-        verificationTokenRepository.deleteByUserAndType(userId, VerificationToken.TokenType.PASSWORD_RESET);
-        verificationTokenRepository.deleteByUserAndType(userId, VerificationToken.TokenType.EMAIL_CHANGE);
+        verificationTokenRepository.deleteByUserAndType(userId, VerificationToken.TokenType.EMAIL_VERIFICATION.name());
+        verificationTokenRepository.deleteByUserAndType(userId, VerificationToken.TokenType.PASSWORD_RESET.name());
+        verificationTokenRepository.deleteByUserAndType(userId, VerificationToken.TokenType.EMAIL_CHANGE.name());
     }
     
     public UserResponse getUserProfile(UUID userId) {

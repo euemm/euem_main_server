@@ -32,7 +32,7 @@ public class EmailService {
         LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(otpExpiryMinutes);
         
         // Delete any existing tokens for this user and type
-        verificationTokenRepository.deleteByUserAndType(user.getId(), tokenType);
+        verificationTokenRepository.deleteByUserAndType(user.getId(), tokenType.name());
         
         // Create new verification token
         VerificationToken token = new VerificationToken();
@@ -56,7 +56,7 @@ public class EmailService {
         LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(otpExpiryMinutes);
         
         // Delete any existing tokens for this user and type
-        verificationTokenRepository.deleteByUserAndType(user.getId(), tokenType);
+        verificationTokenRepository.deleteByUserAndType(user.getId(), tokenType.name());
         
         // Create new verification token
         VerificationToken token = new VerificationToken();

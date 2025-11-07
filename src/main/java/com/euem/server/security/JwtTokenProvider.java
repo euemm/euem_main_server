@@ -30,6 +30,7 @@ public class JwtTokenProvider {
             .setSubject(userPrincipal.getUsername())
             .setIssuedAt(new Date())
             .setExpiration(expiryDate)
+            .claim("email", userPrincipal.getUsername())
             .signWith(getSigningKey())
             .compact();
     }

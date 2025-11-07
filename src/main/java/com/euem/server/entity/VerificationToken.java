@@ -30,7 +30,7 @@ public class VerificationToken {
     private LocalDateTime expiryTime;
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false, length = 50)
     private TokenType type;
     
     public enum TokenType {
