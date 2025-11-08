@@ -223,6 +223,7 @@ public class UserService {
         
         // Soft delete
         user.setIsEnabled(false);
+        user.setIsVerified(false);
         userRepository.save(user);
         
 		// Delete all verification tokens for this user

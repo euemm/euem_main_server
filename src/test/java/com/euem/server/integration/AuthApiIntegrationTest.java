@@ -236,7 +236,7 @@ class AuthApiIntegrationTest {
 		User disabledUser = userRepository.findByEmail(TEST_EMAIL)
 			.orElseThrow(() -> new RuntimeException("User should exist after deletion"));
 		Assertions.assertFalse(disabledUser.getIsEnabled(), "User should be disabled after account deletion");
-		Assertions.assertTrue(disabledUser.getIsVerified(), "Deleted account should retain verification status");
+		Assertions.assertFalse(disabledUser.getIsVerified(), "Deleted account should not retain verification status");
 		
 		String registerRequest = String.format("""
 			{
