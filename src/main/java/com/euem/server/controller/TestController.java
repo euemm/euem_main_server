@@ -55,28 +55,28 @@ public class TestController {
         }
     }
     
-    @PostMapping("/email")
-    public ResponseEntity<Map<String, Object>> testEmail(@RequestParam String email) {
-        Map<String, Object> result = new HashMap<>();
-        
-        try {
-            // Create a test user
-            User testUser = new User();
-            testUser.setEmail(email);
-            testUser.setFirstName("Test");
-            testUser.setLastName("User");
-            
-            // Send test email
-            emailService.sendVerificationEmail(testUser, VerificationToken.TokenType.EMAIL_VERIFICATION);
-            
-            result.put("status", "Email sent successfully");
-            result.put("message", "Check your email for verification code");
-            
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            result.put("status", "Email sending failed");
-            result.put("error", e.getMessage());
-            return ResponseEntity.status(500).body(result);
-        }
-    }
+	@PostMapping("/email")
+	public ResponseEntity<Map<String, Object>> testEmail(@RequestParam String email) {
+		Map<String, Object> result = new HashMap<>();
+		
+		try {
+			User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+			
+			emailService.sendVerificationEmail(user, VerificationToken.TokenType.EMAIL_VERIFICATION);
+			
+			result.put("status", "Email sent successfully");
+			result.put("message", "Check your email for verification code");
+			
+			return ResponseEntity.ok(result);
+		} catch (IllegalArgumentException ex) {
+			result.put("status", "Email sending failed");
+			result.put("error", ex.getMessage());
+			return ResponseEntity.status(404).body(result);
+		} catch (Exception e) {
+			result.put("status", "Email sending failed");
+			result.put("error", e.getMessage());
+			return ResponseEntity.status(500).body(result);
+		}
+	}
 }
